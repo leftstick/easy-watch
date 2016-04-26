@@ -64,6 +64,23 @@ setTimeout(function() {
 });
 ```
 
+### Unsubscribe Watcher ###
+
+```javascript
+var obj = {name: 'Beijing'};
+var watcher = new Watch(obj);
+
+var unsubscribe = watcher.subscribe(() => {
+    //never gets called because it is unsubscribed immediately
+});
+
+unsubscribe();
+
+setTimeout(function() {
+    obj.name = 'Shanghai';
+});
+```
+
 ## LICENSE ##
 
 [MIT License](https://raw.githubusercontent.com/leftstick/easy-watch/master/LICENSE)
