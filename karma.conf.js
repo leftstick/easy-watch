@@ -22,7 +22,7 @@ module.exports = function(config) {
                 loaders: [
                     {
                         test: /\.js$/,
-                        loader: 'traceur?experimental&runtime',
+                        loader: 'babel?presets[]=es2015',
                         exclude: /(node_modules)/
                     }
                 ]

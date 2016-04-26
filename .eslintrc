@@ -207,6 +207,7 @@
         "google": true,
         "require": true,
         "injector": true,
-        "SearchResultMapViewController": true
+        "SearchResultMapViewController": true,
+        "expect": true
     }
 }
