@@ -140,4 +140,25 @@ describe('dirty checker', function() {
             obj.districts.push('Tongzhou', 'Fengtai');
         });
     });
+
+    it('unsubscribe', function(done) {
+        var obj = {name: 'Beijing'};
+        var watcher = new Watch(obj);
+
+        var counter = 0;
+        var unsubscribe = watcher.subscribe(() => {
+            counter++;
+        });
+
+        unsubscribe();
+
+        setTimeout(function() {
+            obj.name = 'Shanghai';
+            setTimeout(function() {
+                expect(counter).to.be.equal(0);
+                done();
+            });
+        });
+
+    });
 });
