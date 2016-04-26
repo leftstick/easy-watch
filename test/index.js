@@ -92,4 +92,52 @@ describe('dirty checker', function() {
             user.child = {noway: 'nonono'};
         });
     });
+
+    it('simeple array', function(done) {
+        var arr = ['Beijing', 'Shanghai'];
+        var watcher = new EasyWatch(arr);
+
+        watcher.subscribe(function() {
+            expect(arr.length).to.be.equal(1);
+            expect(arr[0]).to.be.equal('Beijing');
+            done();
+        });
+
+        setTimeout(function() {
+            arr.pop();
+        });
+    });
+
+    it('array with simple object', function(done) {
+        var arr = [{name: 'Beijing'}, {name: 'Shanghai'}];
+        var watcher = new EasyWatch(arr);
+
+        watcher.subscribe(function() {
+            expect(arr.length).to.be.equal(2);
+            expect(arr[0].name).to.be.equal('Nanjing');
+            done();
+        });
+
+        setTimeout(function() {
+            arr[0].name = 'Nanjing';
+        });
+    });
+
+    it('object with array as property', function(done) {
+        var obj = {
+            name: 'Beijing',
+            districts: ['Daxing', 'Changping', 'Haidian', 'Chaoyang']
+        };
+        var watcher = new EasyWatch(obj);
+
+        watcher.subscribe(function() {
+            expect(obj.districts.length).to.be.equal(6);
+            expect(obj.districts[5]).to.be.equal('Fengtai');
+            done();
+        });
+
+        setTimeout(function() {
+            obj.districts.push('Tongzhou', 'Fengtai');
+        });
+    });
 });

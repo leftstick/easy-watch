@@ -67,16 +67,29 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _Subscriber = __webpack_require__(1);
 
+	var _Arrays = __webpack_require__(2);
+
+	var _Util = __webpack_require__(3);
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var EasyWatch = exports.EasyWatch = function () {
 	    function EasyWatch(src, parent) {
 	        _classCallCheck(this, EasyWatch);
 
+	        if (!(0, _Util.isArray)(src) && !(0, _Util.isPlainObject)(src)) {
+	            throw new Error('Only object or array can be watched');
+	        }
+	        Object.defineProperty(src, '__wa__', {
+	            value: this,
+	            enumerable: false,
+	            writable: true,
+	            configurable: true
+	        });
 	        this.value = src;
 	        this.subscrbier = new _Subscriber.Subscriber(parent && parent.subscrbier);
 
-	        this._toThrough(this.value);
+	        this._goThrough(this.value);
 	    }
 
 	    _createClass(EasyWatch, [{
@@ -90,13 +103,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }
 	    }, {
-	        key: '_toThrough',
-	        value: function _toThrough(obj) {
+	        key: '_goThrough',
+	        value: function _goThrough(value) {
+	            if ((0, _Util.isArray)(value)) {
+	                return this._goThroughArray(value);
+	            }
+	            this._goThroughObj(value);
+	        }
+	    }, {
+	        key: '_goThroughObj',
+	        value: function _goThroughObj(obj) {
 	            var _this3 = this;
 
 	            var keys = Object.keys(obj);
 	            keys.forEach(function (key) {
 	                _this3._redefineProperty(obj, key, obj[key]);
+	            });
+	        }
+	    }, {
+	        key: '_goThroughArray',
+	        value: function _goThroughArray(arr) {
+	            var _this4 = this;
+
+	            // eslint-disable-next-line no-proto
+	            arr.__proto__ = _Arrays.interceptedArray;
+
+	            arr.filter(function (item) {
+	                return (0, _Util.isArray)(item) || (0, _Util.isPlainObject)(item);
+	            }).forEach(function (item) {
+	                // eslint-disable-next-line no-new
+	                new EasyWatch(item, _this4);
 	            });
 	        }
 	    }, {
@@ -190,6 +226,75 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    return Subscriber;
 	}();
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var interceptedArray = exports.interceptedArray = function () {
+	    var arrayProto = Array.prototype;
+	    var proto = Object.create(arrayProto);
+
+	    var modifyMethods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
+
+	    modifyMethods.forEach(function (method) {
+	        // cache original method
+	        var original = arrayProto[method];
+
+	        Object.defineProperty(proto, method, {
+	            value: function value() {
+	                var args = arrayProto.slice.apply(arguments);
+	                var result = original.apply(this, args);
+	                var inserted;
+	                switch (method) {
+	                    case 'push':
+	                        inserted = args;
+	                        break;
+	                    case 'unshift':
+	                        inserted = args;
+	                        break;
+	                    case 'splice':
+	                        inserted = args.slice(2);
+	                        break;
+	                    default:
+	                        break;
+	                }
+	                if (inserted) {
+	                    this.__wa__._goThroughArray.bind(this.__wa__)(inserted);
+	                }
+	                this.__wa__._notify.bind(this.__wa__)();
+	                return result;
+	            },
+	            enumerable: false,
+	            writable: true,
+	            configurable: true
+	        });
+	    });
+
+	    return proto;
+	}();
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var isArray = exports.isArray = function isArray(arr) {
+	  return Object.prototype.toString.call(arr) === '[object Array]';
+	};
+
+	var isPlainObject = exports.isPlainObject = function isPlainObject(obj) {
+	  return Object.prototype.toString.call(obj) === '[object Object]';
+	};
 
 /***/ }
 /******/ ])
