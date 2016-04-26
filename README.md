@@ -17,24 +17,29 @@ npm install --save easy-watch
 
 ## Usage ##
 
+### Import ###
+
 ```javascript
 //commonjs
 var Watch = require('easy-watch').EasyWatch;
 
 //ES2015
 import {EasyWatch} from 'easy-watch';
+```
 
+### Watch Object ###
+
+```javascript
 var userInfo = {
     name: 'leftstick',
-    age: 31,
-    children: []
+    age: 31
 };
 
 var watcher = new Watch(userInfo);
 
 watcher.subscribe(function(){
     //gets called whenever userInfo changes
-    console.log(userInfo);// { name: 'leftstick', age: 26, children: [] }
+    console.log(userInfo);// { name: 'leftstick', age: 26 }
 });
 
 setTimeout(function() {
@@ -42,7 +47,22 @@ setTimeout(function() {
 });
 ```
 
+### Watch Array ###
 
+```javascript
+var cities = ['Beijing', 'Shanghai'];
+
+var watcher = new Watch(cities);
+
+watcher.subscribe(function(){
+    //gets called whenever cities changes
+    console.log(cities);// ['Beijing', 'Shanghai', 'Tianjin']
+});
+
+setTimeout(function() {
+    cities.push('Tianjin');
+});
+```
 
 ## LICENSE ##
 
