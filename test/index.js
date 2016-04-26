@@ -1,11 +1,11 @@
 
-import {EasyWatch} from '../src/index';
+import {EasyWatch as Watch} from '../src/index';
 
 describe('dirty checker', function() {
 
     it('one level object', function() {
         var obj = {name: 'Beijing'};
-        var watcher = new EasyWatch(obj);
+        var watcher = new Watch(obj);
 
         watcher.subscribe(function() {
             expect(obj.name).to.be.equal('Shanghai');
@@ -16,7 +16,7 @@ describe('dirty checker', function() {
 
     it('one level object: multiple subscribers', function() {
         var obj = {name: 'Beijing'};
-        var watcher = new EasyWatch(obj);
+        var watcher = new Watch(obj);
 
         watcher.subscribe(function() {
             expect(obj.name).to.be.equal('Shanghai');
@@ -31,7 +31,7 @@ describe('dirty checker', function() {
 
     it('one level object: multiple properties', function(done) {
         var obj = {name: 'Beijing', size: 16410.54, population: 2152};
-        var watcher = new EasyWatch(obj);
+        var watcher = new Watch(obj);
 
         var counter = 0;
         watcher.subscribe(function() {
@@ -61,7 +61,7 @@ describe('dirty checker', function() {
                 age: 11
             }
         };
-        var watcher = new EasyWatch(user);
+        var watcher = new Watch(user);
 
         watcher.subscribe(function() {
             expect(user.child.age).to.be.equal(9);
@@ -81,7 +81,7 @@ describe('dirty checker', function() {
                 age: 11
             }
         };
-        var watcher = new EasyWatch(user);
+        var watcher = new Watch(user);
 
         watcher.subscribe(function() {
             expect(user.child.noway).to.be.equal('nonono');
@@ -95,7 +95,7 @@ describe('dirty checker', function() {
 
     it('simeple array', function(done) {
         var arr = ['Beijing', 'Shanghai'];
-        var watcher = new EasyWatch(arr);
+        var watcher = new Watch(arr);
 
         watcher.subscribe(function() {
             expect(arr.length).to.be.equal(1);
@@ -110,7 +110,7 @@ describe('dirty checker', function() {
 
     it('array with simple object', function(done) {
         var arr = [{name: 'Beijing'}, {name: 'Shanghai'}];
-        var watcher = new EasyWatch(arr);
+        var watcher = new Watch(arr);
 
         watcher.subscribe(function() {
             expect(arr.length).to.be.equal(2);
@@ -128,7 +128,7 @@ describe('dirty checker', function() {
             name: 'Beijing',
             districts: ['Daxing', 'Changping', 'Haidian', 'Chaoyang']
         };
-        var watcher = new EasyWatch(obj);
+        var watcher = new Watch(obj);
 
         watcher.subscribe(function() {
             expect(obj.districts.length).to.be.equal(6);

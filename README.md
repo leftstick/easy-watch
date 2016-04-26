@@ -24,7 +24,7 @@ npm install --save easy-watch
 var Watch = require('easy-watch').EasyWatch;
 
 //ES2015
-import {EasyWatch} from 'easy-watch';
+import {EasyWatch as Watch} from 'easy-watch';
 ```
 
 ### Watch Object ###
