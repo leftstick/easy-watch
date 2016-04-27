@@ -8,11 +8,12 @@ export const interceptedObject = (function() {
         writable: false,
         configurable: false,
         value: function(property, value) {
-            this[property] = value;
             if (isPlainObject(value)) {
                 this.__wa__._goThroughObj.bind(this.__wa__)(value);
             } else if (isArray(value)) {
                 this.__wa__._goThroughArray.bind(this.__wa__)(value);
+            } else {
+                this.__wa__._redefineProperty.bind(this.__wa__)(this, property, value);
             }
             this.__wa__._notify.bind(this.__wa__)();
         }

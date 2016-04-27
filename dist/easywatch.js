@@ -305,11 +305,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        writable: false,
 	        configurable: false,
 	        value: function value(property, _value) {
-	            this[property] = _value;
 	            if ((0, _Util.isPlainObject)(_value)) {
 	                this.__wa__._goThroughObj.bind(this.__wa__)(_value);
 	            } else if ((0, _Util.isArray)(_value)) {
 	                this.__wa__._goThroughArray.bind(this.__wa__)(_value);
+	            } else {
+	                this.__wa__._redefineProperty.bind(this.__wa__)(this, property, _value);
 	            }
 	            this.__wa__._notify.bind(this.__wa__)();
 	        }

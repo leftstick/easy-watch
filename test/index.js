@@ -175,6 +175,30 @@ describe('dirty checker', function() {
         });
     });
 
+    it('new property added to object and later changed', function(done) {
+        var obj = {};
+        var watcher = new Watch(obj);
+        var counter = 0;
+        watcher.subscribe(function() {
+            if (counter === 0) {
+                console.log(obj.name);
+                expect(obj.name).to.be.equal('Beijing');
+            } else if (counter === 1) {
+
+                expect(obj.name).to.be.equal('Shanghai');
+                done();
+            }
+            counter++;
+        });
+
+        setTimeout(function() {
+            obj.$set('name', 'Beijing');
+            setTimeout(function() {
+                obj.name = 'Shanghai';
+            }, 10);
+        });
+    });
+
     it('new property added to 3 levels depth in object', function(done) {
         var obj = {
             child: {
