@@ -151,13 +151,93 @@ describe('dirty checker', function() {
         var watcher = new Watch(obj);
 
         watcher.subscribe(function() {
-            expect(obj.districts.length).to.be.equal(1);
-            expect(obj.districts[0].size).to.be.equal(8000);
+            expect(obj.districts.length).to.be.equal(2);
+            expect(obj.districts[1].name).to.be.equal('Putuo');
             done();
         });
 
         setTimeout(function() {
-            obj.districts[0].$set('size', 8000);
+            obj.districts.push({name: 'Putuo'});
+        });
+    });
+
+    it('new property added to object', function(done) {
+        var obj = {};
+        var watcher = new Watch(obj);
+
+        watcher.subscribe(function() {
+            expect(obj.name).to.be.equal('Beijing');
+            done();
+        });
+
+        setTimeout(function() {
+            obj.$set('name', 'Beijing');
+        });
+    });
+
+    it('new property added to 3 levels depth in object', function(done) {
+        var obj = {
+            child: {
+                kids: [
+                    {
+                        name: 'Shanghai'
+                    }
+                ]
+            }
+        };
+        var watcher = new Watch(obj);
+
+        watcher.subscribe(function() {
+            expect(obj.child.kids[0].size).to.be.equal(16410.54);
+            done();
+        });
+
+        setTimeout(function() {
+            obj.child.kids[0].$set('size', 16410.54);
+        });
+    });
+
+    it('property removed from object', function(done) {
+        var obj = {name: 'Shanghai'};
+        var watcher = new Watch(obj);
+
+        watcher.subscribe(function() {
+            expect(obj.name).to.be.equal(undefined);
+            done();
+        });
+
+        setTimeout(function() {
+            obj.$remove('name');
+        });
+    });
+
+    it('property removed from 2 levels depth object', function(done) {
+        var changning = {name: 'Changning'};
+
+        var obj = {
+            name: 'Shanghai',
+            districts: [changning, {
+                name: 'Putuo'
+            }]
+        };
+        var watcher = new Watch(obj);
+
+        var counter = 0;
+
+        watcher.subscribe(function() {
+            counter++;
+            setTimeout(function() {
+                expect(counter).to.be.equal(1);
+                done();
+            }, 10);
+        });
+
+        setTimeout(function() {
+            obj.$remove('districts');
+
+            //following update won't trigger subscribe
+            //since it was removed from the watched node
+            changning.name = 'Hebei';
         });
     });
 

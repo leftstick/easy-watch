@@ -23,12 +23,18 @@ export const interceptedObject = (function() {
         writable: false,
         configurable: false,
         value: function(property) {
-            delete this[property];
-            if (isPlainObject(value)) {
-                this.__wa__._goThroughObj.bind(this.__wa__)(value);
-            } else if (isArray(value)) {
-                this.__wa__._goThroughArray.bind(this.__wa__)(value);
+            if (isPlainObject(this[property]) || isArray(this[property])) {
+                this[property].__wa__.subscriber.parent = null;
+                if (isArray(this[property])) {
+                    this[property].forEach(item => {
+                        item.__wa__.subscriber.parent = null;
+                        delete item.__wa__;
+                    });
+                }
+                delete this[property].__wa__;
             }
+            delete this[property];
+
             this.__wa__._notify.bind(this.__wa__)();
         }
     });

@@ -92,6 +92,41 @@ setTimeout(function() {
 });
 ```
 
+### add property to Object via $set ###
+
+```javascript
+var userInfo = {};
+
+var watcher = new Watch(userInfo);
+
+watcher.subscribe(function(){
+    //gets called while new property "name" is added via $set method
+    console.log(userInfo);// { name: 'Beijing' }
+});
+
+setTimeout(function() {
+    userInfo.$set('name', 'Beijing');
+});
+```
+
+### remove property from Object via $remove ###
+
+```javascript
+var userInfo = {name: 'Shanghai'};
+
+var watcher = new Watch(userInfo);
+
+watcher.subscribe(function(){
+    //gets called while new property "name" is added via $set method
+    console.log(userInfo);// {  }
+});
+
+setTimeout(function() {
+    userInfo.$remove('name');
+});
+```
+
+
 ## LICENSE ##
 
 [MIT License](https://raw.githubusercontent.com/leftstick/easy-watch/master/LICENSE)
