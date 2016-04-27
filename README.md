@@ -129,6 +129,13 @@ setTimeout(function() {
 ```
 
 
+## Run Unit-tests ##
+
+```bash
+npm test
+```
+
+
 ## LICENSE ##
 
 [MIT License](https://raw.githubusercontent.com/leftstick/easy-watch/master/LICENSE)
