@@ -141,6 +141,26 @@ describe('dirty checker', function() {
         });
     });
 
+    it('object with array as property: object in array', function(done) {
+        var obj = {
+            name: 'Shanghai',
+            districts: [{
+                name: 'Changning'
+            }]
+        };
+        var watcher = new Watch(obj);
+
+        watcher.subscribe(function() {
+            expect(obj.districts.length).to.be.equal(1);
+            expect(obj.districts[0].size).to.be.equal(8000);
+            done();
+        });
+
+        setTimeout(function() {
+            obj.districts[0].$set('size', 8000);
+        });
+    });
+
     it('unsubscribe', function(done) {
         var obj = {name: 'Beijing'};
         var watcher = new Watch(obj);

@@ -1,5 +1,6 @@
 import {Subscriber} from './Subscriber';
 import {interceptedArray} from './Arrays';
+import {interceptedObject} from './Object';
 
 import {isPlainObject, isArray} from './Util';
 
@@ -16,15 +17,15 @@ export class EasyWatch {
             configurable: true
         });
         this.value = src;
-        this.subscrbier = new Subscriber(parent && parent.subscrbier);
+        this.subscriber = new Subscriber(parent && parent.subscriber);
 
         this._goThrough(this.value);
     }
 
     subscribe(sub) {
-        this.subscrbier.add(sub);
+        this.subscriber.add(sub);
         return () => {
-            this.subscrbier.remove(sub);
+            this.subscriber.remove(sub);
         };
     }
 
@@ -36,6 +37,9 @@ export class EasyWatch {
     }
 
     _goThroughObj(obj) {
+        // eslint-disable-next-line no-proto
+        obj.__proto__ = interceptedObject;
+
         var keys = Object.keys(obj);
         keys.forEach(key => {
             this._redefineProperty(obj, key, obj[key]);
@@ -85,6 +89,6 @@ export class EasyWatch {
     }
 
     _notify() {
-        this.subscrbier.notify();
+        this.subscriber.notify();
     }
 }

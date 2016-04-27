@@ -19,12 +19,23 @@ npm install --save easy-watch
 
 ### Import ###
 
-```javascript
-//commonjs
-var Watch = require('easy-watch').EasyWatch;
+**commonjs**
 
-//ES2015
+```javascript
+var Watch = require('easy-watch').EasyWatch;
+```
+
+**ES2015(ES6)**
+```javascript
 import {EasyWatch as Watch} from 'easy-watch';
+```
+
+**script**
+```html
+<script src="easy-watch/dist/easywatch.js" charset="utf-8" type="text/javascript"></script>
+<script type="text/javascript">
+    var Watch = window.EasyWatch;
+</script>
 ```
 
 ### Watch Object ###
@@ -64,7 +75,7 @@ setTimeout(function() {
 });
 ```
 
-### Unsubscribe Watcher ###
+### Unsubscribe ###
 
 ```javascript
 var obj = {name: 'Beijing'};
