@@ -9,7 +9,7 @@ easy-watch
 
 Super simple dirty checker inspired by [@尤小右](https://github.com/yyx990803)'s [vue](http://vuejs.org/). BTW, [vue](http://vuejs.org/) is really awesome^^!
 
-You may think of this as some kind of black magic, but `Object.defineProperty` is part of standard. And it's faster to going in this way than `AngularJS`'s `$digest` cycle.
+You may think of this as some kind of black magic, but `Object.defineProperty` is part of standard. And it's faster to go in this way than `AngularJS`'s `$digest` cycle.
 
 ## Installation ##
 
