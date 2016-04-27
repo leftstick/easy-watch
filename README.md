@@ -131,6 +131,8 @@ setTimeout(function() {
 
 ## Run Unit-tests ##
 
+I wrote some unit-tests to verify the functionality. In case you want to see how they passed, all test cases placed in `test` folder, and execute following command would perform the test.
+
 ```bash
 npm test
 ```
