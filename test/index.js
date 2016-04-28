@@ -73,6 +73,32 @@ describe('dirty checker', function() {
         });
     });
 
+    it('four levels object', function(done) {
+        var user = {
+            name: 'Xiaoguang',
+            child: {
+                nickname: 'xxguang',
+                age: 11,
+                level3: {
+                    test: 'testtt',
+                    level4: {
+                        city: 'Tianjin'
+                    }
+                }
+            }
+        };
+        var watcher = new Watch(user);
+
+        watcher.subscribe(function() {
+            expect(user.child.level3.level4).to.be.equal('Hangzhou');
+            done();
+        });
+
+        setTimeout(function() {
+            user.child.level3.level4 = 'Hangzhou';
+        });
+    });
+
     it('two levels object: change child reference', function(done) {
         var user = {
             name: 'Xiaoguang',
@@ -90,6 +116,27 @@ describe('dirty checker', function() {
 
         setTimeout(function() {
             user.child = {noway: 'nonono'};
+        });
+    });
+
+    it('multiple levels object: change child reference, and later changed', function(done) {
+        var child = {nickname: 'xxguang', age: 11};
+        var user = {name: 'Xiaoguang', child: child};
+        var watcher = new Watch(user);
+
+        var counter = 0;
+        watcher.subscribe(function() {
+            counter++;
+            setTimeout(function() {
+                expect(user.child.noway).to.be.equal('nonono');
+                expect(counter).to.be.equal(1);
+                done();
+            }, 50);
+        });
+
+        setTimeout(function() {
+            user.child = {noway: 'nonono'};
+            child.age = 33;
         });
     });
 
@@ -161,6 +208,27 @@ describe('dirty checker', function() {
         });
     });
 
+    it('object removed from array, later change should not trigger subscribe', function(done) {
+        var district = {name: 'Changning'};
+        var obj = {name: 'Shanghai', districts: [district]};
+        var watcher = new Watch(obj);
+
+        var counter = 0;
+        watcher.subscribe(function() {
+            counter++;
+            setTimeout(function() {
+                expect(obj.districts.length).to.be.equal(0);
+                expect(counter).to.be.equal(1);
+                done();
+            }, 50);
+        });
+
+        setTimeout(function() {
+            obj.districts.pop();
+            district.name = 'Putuo';
+        });
+    });
+
     it('new property added to object', function(done) {
         var obj = {};
         var watcher = new Watch(obj);
@@ -181,7 +249,6 @@ describe('dirty checker', function() {
         var counter = 0;
         watcher.subscribe(function() {
             if (counter === 0) {
-                console.log(obj.name);
                 expect(obj.name).to.be.equal('Beijing');
             } else if (counter === 1) {
 

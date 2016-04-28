@@ -6,7 +6,7 @@ import {isPlainObject, isArray} from './Util';
 
 export class EasyWatch {
 
-    constructor(src, parent) {
+    constructor(src, depend) {
         if (!isArray(src) && !isPlainObject(src)) {
             throw new Error('Only object or array can be watched');
         }
@@ -17,7 +17,7 @@ export class EasyWatch {
             configurable: true
         });
         this.value = src;
-        this.subscriber = new Subscriber(parent && parent.subscriber);
+        this.subscriber = new Subscriber(depend);
 
         this._goThrough(this.value);
     }
@@ -36,16 +36,6 @@ export class EasyWatch {
         this._goThroughObj(value);
     }
 
-    _goThroughObj(obj) {
-        // eslint-disable-next-line no-proto
-        obj.__proto__ = interceptedObject;
-
-        var keys = Object.keys(obj);
-        keys.forEach(key => {
-            this._redefineProperty(obj, key, obj[key]);
-        });
-    }
-
     _goThroughArray(arr) {
         // eslint-disable-next-line no-proto
         arr.__proto__ = interceptedArray;
@@ -56,6 +46,16 @@ export class EasyWatch {
                 // eslint-disable-next-line no-new
                 new EasyWatch(item, this);
             });
+    }
+
+    _goThroughObj(obj) {
+        // eslint-disable-next-line no-proto
+        obj.__proto__ = interceptedObject;
+
+        var keys = Object.keys(obj);
+        keys.forEach(key => {
+            this._redefineProperty(obj, key, obj[key]);
+        });
     }
 
     _redefineProperty(obj, key, val) {
@@ -73,6 +73,9 @@ export class EasyWatch {
             set: function(newValue) {
                 if (value === newValue) {
                     return;
+                }
+                if (isPlainObject(value) || isArray(value)) {
+                    value.__wa__.subscriber._removeDep(this.__wa__);
                 }
                 value = newValue;
                 _this._watch(newValue);

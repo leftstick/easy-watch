@@ -69,14 +69,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _Arrays = __webpack_require__(2);
 
-	var _Object = __webpack_require__(3);
+	var _Object = __webpack_require__(4);
 
-	var _Util = __webpack_require__(4);
+	var _Util = __webpack_require__(3);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var EasyWatch = exports.EasyWatch = function () {
-	    function EasyWatch(src, parent) {
+	    function EasyWatch(src, depend) {
 	        _classCallCheck(this, EasyWatch);
 
 	        if (!(0, _Util.isArray)(src) && !(0, _Util.isPlainObject)(src)) {
@@ -89,7 +89,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            configurable: true
 	        });
 	        this.value = src;
-	        this.subscriber = new _Subscriber.Subscriber(parent && parent.subscriber);
+	        this.subscriber = new _Subscriber.Subscriber(depend);
 
 	        this._goThrough(this.value);
 	    }
@@ -113,22 +113,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this._goThroughObj(value);
 	        }
 	    }, {
-	        key: '_goThroughObj',
-	        value: function _goThroughObj(obj) {
-	            var _this3 = this;
-
-	            // eslint-disable-next-line no-proto
-	            obj.__proto__ = _Object.interceptedObject;
-
-	            var keys = Object.keys(obj);
-	            keys.forEach(function (key) {
-	                _this3._redefineProperty(obj, key, obj[key]);
-	            });
-	        }
-	    }, {
 	        key: '_goThroughArray',
 	        value: function _goThroughArray(arr) {
-	            var _this4 = this;
+	            var _this3 = this;
 
 	            // eslint-disable-next-line no-proto
 	            arr.__proto__ = _Arrays.interceptedArray;
@@ -137,7 +124,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return (0, _Util.isArray)(item) || (0, _Util.isPlainObject)(item);
 	            }).forEach(function (item) {
 	                // eslint-disable-next-line no-new
-	                new EasyWatch(item, _this4);
+	                new EasyWatch(item, _this3);
+	            });
+	        }
+	    }, {
+	        key: '_goThroughObj',
+	        value: function _goThroughObj(obj) {
+	            var _this4 = this;
+
+	            // eslint-disable-next-line no-proto
+	            obj.__proto__ = _Object.interceptedObject;
+
+	            var keys = Object.keys(obj);
+	            keys.forEach(function (key) {
+	                _this4._redefineProperty(obj, key, obj[key]);
 	            });
 	        }
 	    }, {
@@ -157,6 +157,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                set: function set(newValue) {
 	                    if (value === newValue) {
 	                        return;
+	                    }
+	                    if ((0, _Util.isPlainObject)(value) || (0, _Util.isArray)(value)) {
+	                        value.__wa__.subscriber._removeDep(this.__wa__);
 	                    }
 	                    value = newValue;
 	                    _this._watch(newValue);
@@ -197,14 +200,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Subscriber = exports.Subscriber = function () {
-	    function Subscriber(parent) {
+	    function Subscriber(depend) {
 	        _classCallCheck(this, Subscriber);
 
-	        this.parent = parent;
 	        this.subs = [];
+	        this.deps = [];
+
+	        this._addDep(depend);
 	    }
 
 	    _createClass(Subscriber, [{
+	        key: "_addDep",
+	        value: function _addDep(depend) {
+	            if (depend) {
+	                this.deps.push(depend);
+	            }
+	        }
+	    }, {
+	        key: "_removeDep",
+	        value: function _removeDep(depend) {
+	            if (depend) {
+	                var index = this.deps.indexOf(depend);
+	                if (index > -1) {
+	                    return this.deps.splice(index, 1);
+	                }
+	            }
+	        }
+	    }, {
 	        key: "add",
 	        value: function add(sub) {
 	            this.subs.push(sub);
@@ -223,9 +245,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.subs.forEach(function (sub) {
 	                sub();
 	            });
-	            if (this.parent) {
-	                this.parent.notify();
-	            }
+
+	            this.deps.forEach(function (dep) {
+	                dep._notify();
+	            });
 	        }
 	    }]);
 
@@ -234,18 +257,30 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.interceptedArray = undefined;
+
+	var _Util = __webpack_require__(3);
+
 	var interceptedArray = exports.interceptedArray = function () {
 	    var arrayProto = Array.prototype;
 	    var proto = Object.create(arrayProto);
 
 	    var modifyMethods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
+
+	    var removeDepends = function removeDepends(items, depend) {
+	        items.filter(function (item) {
+	            return (0, _Util.isPlainObject)(item) || (0, _Util.isArray)(item);
+	        }).forEach(function (item) {
+	            item.__wa__.subscriber._removeDep(depend);
+	        });
+	    };
 
 	    modifyMethods.forEach(function (method) {
 	        // cache original method
@@ -255,7 +290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            value: function value() {
 	                var args = arrayProto.slice.apply(arguments);
 	                var result = original.apply(this, args);
-	                var inserted;
+	                var inserted, removed;
 	                switch (method) {
 	                    case 'push':
 	                        inserted = args;
@@ -265,12 +300,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        break;
 	                    case 'splice':
 	                        inserted = args.slice(2);
+	                        removed = result;
+	                        break;
+	                    case 'pop':
+	                        removed = [result];
+	                        break;
+	                    case 'shift':
+	                        removed = typeof result === 'undefined' ? [] : [result];
 	                        break;
 	                    default:
 	                        break;
 	                }
 	                if (inserted) {
 	                    this.__wa__._goThroughArray.bind(this.__wa__)(inserted);
+	                }
+
+	                if (removed) {
+	                    removeDepends(removed, this.__wa__);
 	                }
 	                this.__wa__._notify.bind(this.__wa__)();
 	                return result;
@@ -286,62 +332,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.interceptedObject = undefined;
-
-	var _Util = __webpack_require__(4);
-
-	var interceptedObject = exports.interceptedObject = function () {
-	    var proto = Object.create({});
-
-	    Object.defineProperty(proto, '$set', {
-	        enumerable: false,
-	        writable: false,
-	        configurable: false,
-	        value: function value(property, _value) {
-	            if ((0, _Util.isPlainObject)(_value)) {
-	                this.__wa__._goThroughObj.bind(this.__wa__)(_value);
-	            } else if ((0, _Util.isArray)(_value)) {
-	                this.__wa__._goThroughArray.bind(this.__wa__)(_value);
-	            } else {
-	                this.__wa__._redefineProperty.bind(this.__wa__)(this, property, _value);
-	            }
-	            this.__wa__._notify.bind(this.__wa__)();
-	        }
-	    });
-
-	    Object.defineProperty(proto, '$remove', {
-	        enumerable: false,
-	        writable: false,
-	        configurable: false,
-	        value: function value(property) {
-	            if ((0, _Util.isPlainObject)(this[property]) || (0, _Util.isArray)(this[property])) {
-	                this[property].__wa__.subscriber.parent = null;
-	                if ((0, _Util.isArray)(this[property])) {
-	                    this[property].forEach(function (item) {
-	                        item.__wa__.subscriber.parent = null;
-	                        delete item.__wa__;
-	                    });
-	                }
-	                delete this[property].__wa__;
-	            }
-	            delete this[property];
-
-	            this.__wa__._notify.bind(this.__wa__)();
-	        }
-	    });
-
-	    return proto;
-	}();
-
-/***/ },
-/* 4 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -356,6 +346,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isPlainObject = exports.isPlainObject = function isPlainObject(obj) {
 	  return Object.prototype.toString.call(obj) === '[object Object]';
 	};
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.interceptedObject = undefined;
+
+	var _Util = __webpack_require__(3);
+
+	var interceptedObject = exports.interceptedObject = function () {
+	    var proto = Object.create({});
+
+	    Object.defineProperty(proto, '$set', {
+	        enumerable: false,
+	        writable: false,
+	        configurable: false,
+	        value: function value(property, _value) {
+	            if ((0, _Util.isPlainObject)(_value)) {
+	                this.__wa__._goThroughObj(_value);
+	            } else if ((0, _Util.isArray)(_value)) {
+	                this.__wa__._goThroughArray(_value);
+	            } else {
+	                this.__wa__._redefineProperty(this, property, _value);
+	            }
+	            this.__wa__._notify();
+	        }
+	    });
+
+	    Object.defineProperty(proto, '$remove', {
+	        enumerable: false,
+	        writable: false,
+	        configurable: false,
+	        value: function value(property) {
+	            if ((0, _Util.isPlainObject)(this[property]) || (0, _Util.isArray)(this[property])) {
+	                this[property].__wa__.subscriber._removeDep(this.__wa__);
+	            }
+	            delete this[property];
+
+	            this.__wa__._notify();
+	        }
+	    });
+
+	    return proto;
+	}();
 
 /***/ }
 /******/ ])

@@ -9,13 +9,13 @@ export const interceptedObject = (function() {
         configurable: false,
         value: function(property, value) {
             if (isPlainObject(value)) {
-                this.__wa__._goThroughObj.bind(this.__wa__)(value);
+                this.__wa__._goThroughObj(value);
             } else if (isArray(value)) {
-                this.__wa__._goThroughArray.bind(this.__wa__)(value);
+                this.__wa__._goThroughArray(value);
             } else {
-                this.__wa__._redefineProperty.bind(this.__wa__)(this, property, value);
+                this.__wa__._redefineProperty(this, property, value);
             }
-            this.__wa__._notify.bind(this.__wa__)();
+            this.__wa__._notify();
         }
     });
 
@@ -25,18 +25,11 @@ export const interceptedObject = (function() {
         configurable: false,
         value: function(property) {
             if (isPlainObject(this[property]) || isArray(this[property])) {
-                this[property].__wa__.subscriber.parent = null;
-                if (isArray(this[property])) {
-                    this[property].forEach(item => {
-                        item.__wa__.subscriber.parent = null;
-                        delete item.__wa__;
-                    });
-                }
-                delete this[property].__wa__;
+                this[property].__wa__.subscriber._removeDep(this.__wa__);
             }
             delete this[property];
 
-            this.__wa__._notify.bind(this.__wa__)();
+            this.__wa__._notify();
         }
     });
 

@@ -1,9 +1,26 @@
 
 export class Subscriber {
 
-    constructor(parent) {
-        this.parent = parent;
+    constructor(depend) {
         this.subs = [];
+        this.deps = [];
+
+        this._addDep(depend);
+    }
+
+    _addDep(depend) {
+        if (depend) {
+            this.deps.push(depend);
+        }
+    }
+
+    _removeDep(depend) {
+        if (depend) {
+            var index = this.deps.indexOf(depend);
+            if (index > -1) {
+                return this.deps.splice(index, 1);
+            }
+        }
     }
 
     add(sub) {
@@ -21,9 +38,10 @@ export class Subscriber {
         this.subs.forEach(sub => {
             sub();
         });
-        if (this.parent) {
-            this.parent.notify();
-        }
+
+        this.deps.forEach(dep => {
+            dep._notify();
+        });
     }
 
 }

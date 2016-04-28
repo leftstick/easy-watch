@@ -1,3 +1,4 @@
+import {isPlainObject, isArray} from './Util';
 
 export const interceptedArray = (function() {
     var arrayProto = Array.prototype;
@@ -13,6 +14,14 @@ export const interceptedArray = (function() {
         'reverse'
     ];
 
+    var removeDepends = function(items, depend) {
+        items
+            .filter(item => isPlainObject(item) || isArray(item))
+            .forEach(item => {
+                item.__wa__.subscriber._removeDep(depend);
+            });
+    };
+
     modifyMethods.forEach(function(method) {
         // cache original method
         var original = arrayProto[method];
@@ -21,7 +30,8 @@ export const interceptedArray = (function() {
             value: function() {
                 var args = arrayProto.slice.apply(arguments);
                 var result = original.apply(this, args);
-                var inserted;
+                var inserted,
+                    removed;
                 switch (method) {
                     case 'push':
                         inserted = args;
@@ -31,12 +41,23 @@ export const interceptedArray = (function() {
                         break;
                     case 'splice':
                         inserted = args.slice(2);
+                        removed = result;
+                        break;
+                    case 'pop':
+                        removed = [result];
+                        break;
+                    case 'shift':
+                        removed = typeof result === 'undefined' ? [] : [result];
                         break;
                     default:
                         break;
                 }
                 if (inserted) {
                     this.__wa__._goThroughArray.bind(this.__wa__)(inserted);
+                }
+
+                if (removed) {
+                    removeDepends(removed, this.__wa__);
                 }
                 this.__wa__._notify.bind(this.__wa__)();
                 return result;
