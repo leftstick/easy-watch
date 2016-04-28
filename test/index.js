@@ -229,6 +229,38 @@ describe('dirty checker', function() {
         });
     });
 
+    it('object removed from array, later change should not trigger subscribe - 2', function(done) {
+        var district = {name: 'Changning'};
+        var obj = {name: 'Shanghai', districts: [district]};
+        var obj2 = {test: district};
+
+        var watcher = new Watch(obj);
+        var watcher2 = new Watch(obj2);
+
+        var watcherCounter = 0;
+        var watcher2Counter = 0;
+        watcher.subscribe(function() {
+            watcherCounter++;
+        });
+
+        watcher2.subscribe(function() {
+            watcher2Counter++;
+        });
+
+        setTimeout(function() {
+            expect(watcherCounter).to.be.equal(1);
+            expect(watcher2Counter).to.be.equal(1);
+            expect(obj.districts.length).to.be.equal(0);
+            expect(obj2.test.name).to.be.equal('Putuo');
+            done();
+        }, 50);
+
+        setTimeout(function() {
+            obj.districts.pop();
+            district.name = 'Putuo';
+        });
+    });
+
     it('new property added to object', function(done) {
         var obj = {};
         var watcher = new Watch(obj);
