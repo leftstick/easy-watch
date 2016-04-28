@@ -94,6 +94,8 @@ setTimeout(function() {
 });
 ```
 
+**Due to limitation of current JavaScript implementation, it's hard to detect if new property added to the object, or property removed from object. So we need extra method to handle those scenario**
+
 ### add property to Object via $set ###
 
 ```javascript
