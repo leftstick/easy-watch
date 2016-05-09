@@ -33,17 +33,11 @@ describe('dirty checker', function() {
         var obj = {name: 'Beijing', size: 16410.54, population: 2152};
         var watcher = new Watch(obj);
 
-        var counter = 0;
         watcher.subscribe(function() {
-            if (counter === 0) {
-                expect(obj.name).to.be.equal('Shanghai');
-            } else if (counter === 1) {
-                expect(obj.size).to.be.equal(6340);
-            } else if (counter === 2) {
-                expect(obj.population).to.be.equal(2426);
-                done();
-            }
-            counter++;
+            expect(obj.name).to.be.equal('Shanghai');
+            expect(obj.size).to.be.equal(6340);
+            expect(obj.population).to.be.equal(2426);
+            done();
         });
 
         setTimeout(function() {
@@ -124,19 +118,15 @@ describe('dirty checker', function() {
         var user = {name: 'Xiaoguang', child: child};
         var watcher = new Watch(user);
 
-        var counter = 0;
         watcher.subscribe(function() {
-            counter++;
-            setTimeout(function() {
-                expect(user.child.noway).to.be.equal('nonono');
-                expect(counter).to.be.equal(1);
-                done();
-            }, 50);
+            expect(user.child.noway).to.be.equal('nonono');
+            expect(user.child.age).to.be.equal(undefined);
+            done();
         });
 
         setTimeout(function() {
             user.child = {noway: 'nonono'};
-            child.age = 33;
+            child.age = 33; //this won't affect subscriber
         });
     });
 
@@ -216,15 +206,15 @@ describe('dirty checker', function() {
         var counter = 0;
         watcher.subscribe(function() {
             counter++;
+            expect(obj.districts.length).to.be.equal(0);
             setTimeout(function() {
-                expect(obj.districts.length).to.be.equal(0);
                 expect(counter).to.be.equal(1);
                 done();
-            }, 50);
+            }, 10);
         });
 
+        obj.districts.pop();
         setTimeout(function() {
-            obj.districts.pop();
             district.name = 'Putuo';
         });
     });
@@ -255,8 +245,8 @@ describe('dirty checker', function() {
             done();
         }, 50);
 
+        obj.districts.pop();
         setTimeout(function() {
-            obj.districts.pop();
             district.name = 'Putuo';
         });
     });
@@ -290,11 +280,9 @@ describe('dirty checker', function() {
             counter++;
         });
 
+        obj.$set('name', 'Beijing');
         setTimeout(function() {
-            obj.$set('name', 'Beijing');
-            setTimeout(function() {
-                obj.name = 'Shanghai';
-            }, 10);
+            obj.name = 'Shanghai';
         });
     });
 
@@ -315,9 +303,7 @@ describe('dirty checker', function() {
             done();
         });
 
-        setTimeout(function() {
-            obj.child.kids[0].$set('size', 16410.54);
-        });
+        obj.child.kids[0].$set('size', 16410.54);
     });
 
     it('property removed from object', function(done) {
@@ -329,9 +315,7 @@ describe('dirty checker', function() {
             done();
         });
 
-        setTimeout(function() {
-            obj.$remove('name');
-        });
+        obj.$remove('name');
     });
 
     it('property removed from 2 levels depth object', function(done) {
@@ -355,9 +339,8 @@ describe('dirty checker', function() {
             }, 10);
         });
 
+        obj.$remove('districts');
         setTimeout(function() {
-            obj.$remove('districts');
-
             //following update won't trigger subscribe
             //since it was removed from the watched node
             changning.name = 'Hebei';
@@ -375,13 +358,10 @@ describe('dirty checker', function() {
 
         unsubscribe();
 
+        obj.name = 'Shanghai';
         setTimeout(function() {
-            obj.name = 'Shanghai';
-            setTimeout(function() {
-                expect(counter).to.be.equal(0);
-                done();
-            });
-        });
-
+            expect(counter).to.be.equal(0);
+            done();
+        }, 10);
     });
 });

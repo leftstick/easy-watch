@@ -6,6 +6,10 @@ export class Subscriber {
         this.deps = [];
 
         this._addDep(depend);
+
+        this.timer = setImmediate || setTimeout;
+        this.timerClear = clearImmediate || clearTimeout;
+        this.lastNotifyId;
     }
 
     _addDep(depend) {
@@ -35,12 +39,15 @@ export class Subscriber {
     }
 
     notify() {
-        this.subs.forEach(sub => {
-            sub();
-        });
+        this.timerClear(this.lastNotifyId);
+        this.lastNotifyId = this.timer(() => {
+            this.subs.forEach(sub => {
+                sub();
+            });
 
-        this.deps.forEach(dep => {
-            dep._notify();
+            this.deps.forEach(dep => {
+                dep._notify();
+            });
         });
     }
 
